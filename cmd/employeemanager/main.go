@@ -12,6 +12,10 @@ import (
 	"os"
 )
 
+const (
+	fileName = "employee.csv"
+)
+
 func main() {
 	fmt.Println("This is a main method")
 	router := mux.NewRouter().StrictSlash(true)
@@ -21,13 +25,17 @@ func main() {
 }
 
 func GetAllEmployeesInformation(w http.ResponseWriter, r *http.Request) {
-	csvFile, err := os.Open("employee.csv")
+	employeeResponse := load(fileName)
+	fmt.Println("employees is ", employeeResponse)
+}
+
+func load(fileName string) (employees []response.Employee) {
+
+	csvFile, err := os.Open(fileName)
 	if err != nil {
 		log.Println("error in retrieving the data from csv file is ", err.Error())
 	}
 	reader := csv.NewReader(bufio.NewReader(csvFile))
-
-	var employees []response.Employee
 	for {
 		index, error := reader.Read()
 		if error == io.EOF {
@@ -45,8 +53,5 @@ func GetAllEmployeesInformation(w http.ResponseWriter, r *http.Request) {
 			EndClient:         index[6],
 		})
 	}
-
-	log.Println("employee data is ", employees)
-
-	//employeeResponse, err := json.Marshal(employees)
+	return
 }
