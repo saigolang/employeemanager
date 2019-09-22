@@ -1,15 +1,16 @@
 package main
 
 import (
-	"bufio"
+	"bytes"
+	"employeemanager/pkg/mapper"
 	"employeemanager/pkg/structs/response"
 	"encoding/csv"
+	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
-	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
-	"os"
 )
 
 const (
@@ -26,31 +27,53 @@ func main() {
 
 func GetAllEmployeesInformation(w http.ResponseWriter, r *http.Request) {
 	employeeResponse := load(fileName)
-	fmt.Println("employees is ", employeeResponse)
+	// get csv raw data
+	//rawData := load(employeeResponse)
+
+	result := mapData(employeeResponse)
+	// let's do the mapping
+	finalResponse := mapper.GetEmployees(result)
+
+	respBobyBytes := new(bytes.Buffer)
+	err := json.NewEncoder(respBobyBytes).Encode(&finalResponse)
+	if err != nil {
+		log.Println("error in marshalling the response")
+	}
+	w.WriteHeader(http.StatusOK)
+	w.Write(respBobyBytes.Bytes())
+	fmt.Println("employees is ", finalResponse)
+	return
 }
 
-func load(fileName string) (employees []response.Employee) {
+func load(fileName string) (csvData [][]string) {
 
-	csvFile, err := os.Open(fileName)
+	fileBytes, err := ioutil.ReadFile(fileName)
 	if err != nil {
-		log.Println("error in retrieving the data from csv file is ", err.Error())
+		log.Println("error is ", err.Error())
 	}
-	reader := csv.NewReader(bufio.NewReader(csvFile))
-	for {
-		index, error := reader.Read()
-		if error == io.EOF {
-			break
-		} else if error != nil {
-			log.Fatal(error)
-		}
+	reader := csv.NewReader(bytes.NewReader(fileBytes))
+	reader.FieldsPerRecord = -1
+
+	csvData, err = reader.ReadAll()
+	if err != nil {
+		log.Println("error is ", err.Error())
+	}
+	if len(csvData) == 0 {
+		log.Println("no data found")
+	}
+	return
+}
+
+func mapData(rawData [][]string) (employees []response.Employee) {
+	for _, row := range rawData[1:] {
 		employees = append(employees, response.Employee{
-			ID:                index[0],
-			FirstName:         index[1],
-			LastName:          index[2],
-			DateOfBirth:       index[3],
-			WorkAuthorization: index[4],
-			VisaExpiryDate:    index[5],
-			EndClient:         index[6],
+			ID:                row[0],
+			FirstName:         row[1],
+			LastName:          row[2],
+			DateOfBirth:       row[3],
+			WorkAuthorization: row[4],
+			VisaExpiryDate:    row[5],
+			EndClient:         row[6],
 		})
 	}
 	return

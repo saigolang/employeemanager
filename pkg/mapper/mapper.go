@@ -1,10 +1,13 @@
 package mapper
 
-import "employeemanager/pkg/structs/response"
+import (
+	"employeemanager/pkg/structs/response"
+	"log"
+)
 
-func getEmployees(employees []response.Employee) (finalResponse []response.Employee) {
+func GetEmployees(employees []response.Employee) (finalResponse []response.FinalResponse) {
 	for _, r := range employees {
-		employees = append(employees, response.Employee{
+		finalResponse = append(finalResponse, response.FinalResponse{
 			ID:                r.ID,
 			FirstName:         r.FirstName,
 			LastName:          r.LastName,
@@ -14,5 +17,6 @@ func getEmployees(employees []response.Employee) (finalResponse []response.Emplo
 			EndClient:         r.EndClient,
 		})
 	}
+	log.Println("employees is ", employees)
 	return
 }
