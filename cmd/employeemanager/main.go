@@ -23,6 +23,7 @@ func main() {
 	router := mux.NewRouter().StrictSlash(true)
 	// todo configure logging here
 	router.HandleFunc("/employees", GetAllEmployeesInformation).Methods(http.MethodGet)
+	router.HandleFunc("/employee", GetAllEmployeesInformation).Methods(http.MethodGet)
 	router.HandleFunc("/health", health.Health).Methods(http.MethodGet)
 
 	log.Fatal(http.ListenAndServe(":8000", router))
@@ -30,9 +31,7 @@ func main() {
 
 func GetAllEmployeesInformation(w http.ResponseWriter, r *http.Request) {
 	employeeResponse := load(fileName)
-
 	result := mapData(employeeResponse)
-
 	// let's do the mapping
 	finalResponse := mapper.GetEmployees(result)
 
