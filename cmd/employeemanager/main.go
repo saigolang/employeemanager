@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"employeemanager/pkg/health"
 	"employeemanager/pkg/mapper"
 	"employeemanager/pkg/structs/response"
 	"encoding/csv"
@@ -22,38 +23,38 @@ func main() {
 	router := mux.NewRouter().StrictSlash(true)
 	// todo configure logging here
 	router.HandleFunc("/employees", GetAllEmployeesInformation).Methods(http.MethodGet)
+	router.HandleFunc("/health", health.Health).Methods(http.MethodGet)
+
 	log.Fatal(http.ListenAndServe(":8000", router))
 }
 
 func GetAllEmployeesInformation(w http.ResponseWriter, r *http.Request) {
 	employeeResponse := load(fileName)
-	// get csv raw data
-	//rawData := load(employeeResponse)
 
 	result := mapData(employeeResponse)
+
 	// let's do the mapping
 	finalResponse := mapper.GetEmployees(result)
 
-	respBobyBytes := new(bytes.Buffer)
-	err := json.NewEncoder(respBobyBytes).Encode(&finalResponse)
+	respBodyBytes := new(bytes.Buffer)
+	err := json.NewEncoder(respBodyBytes).Encode(&finalResponse)
 	if err != nil {
 		log.Println("error in marshalling the response")
 	}
 	w.WriteHeader(http.StatusOK)
-	w.Write(respBobyBytes.Bytes())
+	w.Write(respBodyBytes.Bytes())
 	fmt.Println("employees is ", finalResponse)
 	return
 }
 
 func load(fileName string) (csvData [][]string) {
-
 	fileBytes, err := ioutil.ReadFile(fileName)
 	if err != nil {
 		log.Println("error is ", err.Error())
 	}
 	reader := csv.NewReader(bytes.NewReader(fileBytes))
+	//setting it to -1 so that if any record's column value is empty it will be ignored
 	reader.FieldsPerRecord = -1
-
 	csvData, err = reader.ReadAll()
 	if err != nil {
 		log.Println("error is ", err.Error())
