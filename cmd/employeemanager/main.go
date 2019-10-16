@@ -3,11 +3,9 @@ package main
 import (
 	"bytes"
 	"employeemanager/pkg/health"
-	"employeemanager/pkg/mapper"
+	"employeemanager/pkg/routes"
 	"employeemanager/pkg/structs/response"
 	"encoding/csv"
-	"encoding/json"
-	"fmt"
 	"github.com/gorilla/mux"
 	"io/ioutil"
 	"log"
@@ -19,31 +17,19 @@ const (
 )
 
 func main() {
-	fmt.Println("This is a main method")
-	router := mux.NewRouter().StrictSlash(true)
 	// todo configure logging here
-	router.HandleFunc("/employees", GetAllEmployeesInformation).Methods(http.MethodGet)
-	router.HandleFunc("/employee", GetAllEmployeesInformation).Methods(http.MethodGet)
+
+	// load the file
+	//rawCSVData := load("employee.csv")
+	// employees response
+	//employees := mapData(rawCSVData)
+
+	router := mux.NewRouter().StrictSlash(true)
+	router.HandleFunc("/employees", routes.GetAllEmployeesInformation).Methods(http.MethodGet)
+	router.HandleFunc("/employee", routes.GetAllEmployeesInformation).Methods(http.MethodGet)
 	router.HandleFunc("/health", health.Health).Methods(http.MethodGet)
 
 	log.Fatal(http.ListenAndServe(":8000", router))
-}
-
-func GetAllEmployeesInformation(w http.ResponseWriter, r *http.Request) {
-	employeeResponse := load(fileName)
-	result := mapData(employeeResponse)
-	// let's do the mapping
-	finalResponse := mapper.GetEmployees(result)
-
-	respBodyBytes := new(bytes.Buffer)
-	err := json.NewEncoder(respBodyBytes).Encode(&finalResponse)
-	if err != nil {
-		log.Println("error in marshalling the response")
-	}
-	w.WriteHeader(http.StatusOK)
-	w.Write(respBodyBytes.Bytes())
-	fmt.Println("employees is ", finalResponse)
-	return
 }
 
 func load(fileName string) (csvData [][]string) {
