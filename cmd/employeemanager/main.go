@@ -19,14 +19,14 @@ const (
 func main() {
 	// todo configure logging here
 
-	// load the file
-	//rawCSVData := load("employee.csv")
+	//load the file
+	rawCSVData := load("employee.csv")
 	// employees response
-	//employees := mapData(rawCSVData)
+	employees := mapData(rawCSVData)
 
 	router := mux.NewRouter().StrictSlash(true)
-	router.HandleFunc("/employees", routes.GetAllEmployeesInformation).Methods(http.MethodGet)
-	router.HandleFunc("/employee", routes.GetAllEmployeesInformation).Methods(http.MethodGet)
+	router.HandleFunc("/employees", routes.GetAllEmployeesInformation(employees)).Methods(http.MethodGet)
+	router.HandleFunc("/employee", routes.GetEmployeeByID(employees)).Methods(http.MethodGet)
 	router.HandleFunc("/health", health.Health).Methods(http.MethodGet)
 
 	log.Fatal(http.ListenAndServe(":8000", router))

@@ -20,3 +20,7 @@ func GetEmployees(employees []response.Employee) (finalResponse []response.Final
 	log.Println("employees is ", employees)
 	return
 }
+
+func GetEmployee() {
+
+}
