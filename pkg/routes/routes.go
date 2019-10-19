@@ -5,10 +5,8 @@ import (
 	"employeemanager/pkg/mapper"
 	"employeemanager/pkg/structs/request"
 	"employeemanager/pkg/structs/response"
-	"encoding/csv"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 )
@@ -36,7 +34,6 @@ func GetEmployeeByID(employees []response.Employee) func(w http.ResponseWriter, 
 }
 
 func filterResponseByUserRequest(req request.Request, response []response.FinalResponse) (employees []response.FinalResponse) {
-	log.Println("request inside filter finction is", req)
 	for _, r := range response {
 		if req.ID != "" && r.ID != req.ID {
 			continue
@@ -88,37 +85,4 @@ func GetAllEmployeesInformation(employees []response.Employee) func(w http.Respo
 		fmt.Println("employees is ", finalResponse)
 		return
 	}
-}
-
-func load(fileName string) (csvData [][]string) {
-	fileBytes, err := ioutil.ReadFile(fileName)
-	if err != nil {
-		log.Println("error is ", err.Error())
-	}
-	reader := csv.NewReader(bytes.NewReader(fileBytes))
-	//setting it to -1 so that if any record's column value is empty it will be ignored
-	reader.FieldsPerRecord = -1
-	csvData, err = reader.ReadAll()
-	if err != nil {
-		log.Println("error is ", err.Error())
-	}
-	if len(csvData) == 0 {
-		log.Println("no data found")
-	}
-	return
-}
-
-func mapData(rawData [][]string) (employees []response.Employee) {
-	for _, row := range rawData[1:] {
-		employees = append(employees, response.Employee{
-			ID:                row[0],
-			FirstName:         row[1],
-			LastName:          row[2],
-			DateOfBirth:       row[3],
-			WorkAuthorization: row[4],
-			VisaExpiryDate:    row[5],
-			EndClient:         row[6],
-		})
-	}
-	return
 }
